@@ -92,7 +92,7 @@ Session 内批准的工具累积在 `allowedTools` 中，直到执行 `/new`。
 
 ## 自定义命令
 
-在 `<remote_agents_dir>/remote-agents.json` 中定义项目专属斜杠命令：
+在 `.remote-agents/remote-agents.json` 中定义项目专属斜杠命令：
 
 ```json
 {
@@ -122,20 +122,9 @@ Session 内批准的工具累积在 `allowedTools` 中，直到执行 `/new`。
 设置从两个位置级联：
 
 1. **全局配置**：`~/.remote-agents/remote-agents.json` —— 所有项目共享
-2. **项目配置**：`<remote_agents_dir>/remote-agents.json` —— 项目特定覆盖
+2. **项目配置**：`.remote-agents/remote-agents.json` —— 项目特定覆盖
 
 项目配置覆盖全局配置。
-
-### 命令行参数
-
-```bash
-remote-agents [--working-dir <path>] [--remote-agents-dir <path>]
-```
-
-| 标志 | 说明 | 默认值 |
-|------|------|--------|
-| `--working-dir` | 项目源码目录 | 当前目录 |
-| `--remote-agents-dir` | 状态、日志、上下文和输入文件目录 | `<working_dir>/.remote-agents` |
 
 ### `remote-agents.json`
 
@@ -143,13 +132,13 @@ remote-agents [--working-dir <path>] [--remote-agents-dir <path>]
 |--------|------|--------|
 | `runtimeProvider` | Agent runtime：`claude` 或 `codex` | `"claude"` |
 | `model` | 模型覆盖（如 `claude-sonnet-4-6`） | — |
-| `agentEnvScript` | TS 脚本路径（绝对路径或相对于 `<remote_agents_dir>`），需 default-export `async (runtimeProvider): Promise<Record<string, string>>`。每次调用 agent 前执行，返回的环境变量合并入 `process.env`。脚本收到当前 provider，可按 `claude`/`codex` 返回不同的环境变量。 | — |
+| `agentEnvScript` | TS 脚本路径（绝对路径或相对于 `.remote-agents`），需 default-export `async (runtimeProvider): Promise<Record<string, string>>`。每次调用 agent 前执行，返回的环境变量合并入 `process.env`。脚本收到当前 provider，可按 `claude`/`codex` 返回不同的环境变量。 | — |
 | `defaultAllowedTools` | 启动时及 `/new` 后应用的默认允许工具列表 | — |
 | `defaultPermissionMode` | 首次运行或 `/new` 后的默认权限模式：`default`\|`acceptEdits`\|`bypassPermissions`\|`plan`\|`dontAsk` | `default` |
 | `telegramBotToken` | Telegram bot token | 必需 |
 | `telegramAllowedUsers` | 允许的 Telegram 用户 ID 列表 | 必需 |
 | `telegramPollTimeout` | 长轮询超时（秒，1–60）。更高的值减少 QPS 同时保持实时响应。 | `30` |
-| `channelNetworkScript` | TS 文件路径（绝对路径或相对于 `<remote_agents_dir>`），需 default-export `async (channelType): Promise<{ proxy?: string; skipEtcHosts?: boolean } \| undefined>`。返回各频道的网络配置：`proxy` 让频道通过 HTTP(S) 代理出网；`skipEtcHosts` 让 API 主机 DNS 解析跳过 `/etc/hosts` 直接走 DNS。返回 `undefined` 或 `{}` 表示使用默认行为。脚本格式错误时守护进程启动阶段以 `ParseError` 终止。 | — |
+| `channelNetworkScript` | TS 文件路径（绝对路径或相对于 `.remote-agents`），需 default-export `async (channelType): Promise<{ proxy?: string; skipEtcHosts?: boolean } \| undefined>`。返回各频道的网络配置：`proxy` 让频道通过 HTTP(S) 代理出网；`skipEtcHosts` 让 API 主机 DNS 解析跳过 `/etc/hosts` 直接走 DNS。返回 `undefined` 或 `{}` 表示使用默认行为。脚本格式错误时守护进程启动阶段以 `ParseError` 终止。 | — |
 | `commands` | 自定义斜杠命令（见[自定义命令](#自定义命令)） | — |
 | `verbose` | 启用详细日志记录 | `false` |
 
@@ -175,7 +164,7 @@ remote-agents [--working-dir <path>] [--remote-agents-dir <path>]
 }
 ```
 
-项目配置（`<remote_agents_dir>/remote-agents.json`）：
+项目配置（`.remote-agents/remote-agents.json`）：
 ```json
 {
   "model": "opus",
@@ -224,6 +213,14 @@ remote-agents [--working-dir <path>] [--remote-agents-dir <path>]
     ├── YYYY-MM-DD.log                # 守护进程诊断日志（每天一个文件）
     └── remote-agents.json            # 配置文件
 ```
+
+## 卸载
+
+```bash
+curl -fsSL https://github.com/vivaxy/remote-agents/releases/latest/download/uninstall.sh | sh
+```
+
+此命令会删除 `remote-agents` 二进制文件，并询问是否同时删除全局配置目录（`~/.remote-agents/`）。项目内的 `.remote-agents/` 目录不会受到影响。
 
 ## 许可证
 

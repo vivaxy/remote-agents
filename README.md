@@ -92,7 +92,7 @@ Session-approved tools accumulate in `allowedTools` until you run `/new`.
 
 ## Custom Commands
 
-Define project-specific slash commands in `<remote_agents_dir>/remote-agents.json`:
+Define project-specific slash commands in `.remote-agents/remote-agents.json`:
 
 ```json
 {
@@ -122,20 +122,9 @@ Use them like built-in commands: `/review` followed by `Focus on security issues
 Settings cascade from two locations:
 
 1. **Global**: `~/.remote-agents/remote-agents.json` — shared across all projects
-2. **Project**: `<remote_agents_dir>/remote-agents.json` — project-specific overrides
+2. **Project**: `.remote-agents/remote-agents.json` — project-specific overrides
 
 Project settings override global settings.
-
-### CLI flags
-
-```bash
-remote-agents [--working-dir <path>] [--remote-agents-dir <path>]
-```
-
-| Flag | Description | Default |
-|------|-------------|---------|
-| `--working-dir` | Project source directory | current directory |
-| `--remote-agents-dir` | State, logs, context, and input directory | `<working_dir>/.remote-agents` |
 
 ### `remote-agents.json`
 
@@ -143,13 +132,13 @@ remote-agents [--working-dir <path>] [--remote-agents-dir <path>]
 |-----|-------------|---------|
 | `runtimeProvider` | Agent runtime: `claude` or `codex` | `"claude"` |
 | `model` | Model override (e.g. `claude-sonnet-4-6`) | — |
-| `agentEnvScript` | Path to a TS script (absolute or relative to `<remote_agents_dir>`) that default-exports `async (runtimeProvider): Promise<Record<string, string>>`. Called before each invocation; returned vars are merged into `process.env`. Receives the active provider so one script can return different keys for `claude` vs `codex`. | — |
+| `agentEnvScript` | Path to a TS script (absolute or relative to `.remote-agents`) that default-exports `async (runtimeProvider): Promise<Record<string, string>>`. Called before each invocation; returned vars are merged into `process.env`. Receives the active provider so one script can return different keys for `claude` vs `codex`. | — |
 | `defaultAllowedTools` | Allowed tools applied on startup and after `/new` | — |
 | `defaultPermissionMode` | Permission mode on first run or after `/new`: `default`\|`acceptEdits`\|`bypassPermissions`\|`plan`\|`dontAsk` | `default` |
 | `telegramBotToken` | Telegram bot token | Required |
 | `telegramAllowedUsers` | Permitted Telegram user IDs | Required |
 | `telegramPollTimeout` | Long-poll timeout in seconds (1–60). Higher values reduce QPS while keeping responses real-time. | `30` |
-| `channelNetworkScript` | Path to a TS file (absolute or relative to `<remote_agents_dir>`) that default-exports `async (channelType): Promise<{ proxy?: string; skipEtcHosts?: boolean } \| undefined>`. Returns per-channel network config: `proxy` routes the channel through an HTTP(S) proxy; `skipEtcHosts` resolves the API host via DNS directly, bypassing `/etc/hosts`. Return `undefined` or `{}` for default behavior. A malformed script aborts daemon startup with a `ParseError`. | — |
+| `channelNetworkScript` | Path to a TS file (absolute or relative to `.remote-agents`) that default-exports `async (channelType): Promise<{ proxy?: string; skipEtcHosts?: boolean } \| undefined>`. Returns per-channel network config: `proxy` routes the channel through an HTTP(S) proxy; `skipEtcHosts` resolves the API host via DNS directly, bypassing `/etc/hosts`. Return `undefined` or `{}` for default behavior. A malformed script aborts daemon startup with a `ParseError`. | — |
 | `commands` | Custom slash commands (see [Custom Commands](#custom-commands)) | — |
 | `verbose` | Enable verbose logging | `false` |
 
@@ -175,7 +164,7 @@ remote-agents [--working-dir <path>] [--remote-agents-dir <path>]
 }
 ```
 
-Project config (`<remote_agents_dir>/remote-agents.json`):
+Project config (`.remote-agents/remote-agents.json`):
 ```json
 {
   "model": "opus",
@@ -224,6 +213,14 @@ Define Telegram credentials once globally and override model, tools, or commands
     ├── YYYY-MM-DD.log                # Daemon diagnostics (one file per day)
     └── remote-agents.json            # Configuration
 ```
+
+## Uninstall
+
+```bash
+curl -fsSL https://github.com/vivaxy/remote-agents/releases/latest/download/uninstall.sh | sh
+```
+
+This removes the `remote-agents` binary. It will also prompt you before removing the global config directory (`~/.remote-agents/`). Per-project `.remote-agents/` directories are left untouched.
 
 ## License
 
